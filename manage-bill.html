@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dawamu School - Manage Bills</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F0F5E6; }
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #8DB600;
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; }
+        .logo h1 { color: #8DB600; }
+        .back-btn { background: #8DB600; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; text-decoration: none; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 5px solid #8DB600;
+        }
+        .stat-card h3 { color: #666; font-size: 14px; }
+        .stat-card .amount { font-size: 28px; font-weight: bold; color: #8DB600; }
+        .form-card, .table-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .form-title { color: #8DB600; margin-bottom: 20px; }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .btn-submit { background: #8DB600; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #8DB600; color: white; }
+        .status-paid { color: #4caf50; font-weight: bold; }
+        .status-pending { color: #f44336; font-weight: bold; }
+        .pay-btn { background: #4caf50; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; }
+        .footer { text-align: center; padding: 20px; color: #666; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="images/Logo.png" alt="Logo"><h1>DAWAMU SCHOOL - Fee Management</h1></div>
+        <a href="admin-dashboard.html" class="back-btn">← Back</a>
+    </div>
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card"><h3>Total Collected</h3><div class="amount" id="totalCollected">KSh 0</div></div>
+            <div class="stat-card"><h3>Pending Payments</h3><div class="amount" id="totalPending">KSh 0</div></div>
+            <div class="stat-card"><h3>Total Students</h3><div class="amount" id="totalStudents">0</div></div>
+        </div>
+        <div class="form-card">
+            <h2 class="form-title">💰 Add Fee Record</h2>
+            <div class="form-row">
+                <div class="form-group"><label>Student Name</label><input type="text" id="studentName"></div>
+                <div class="form-group"><label>Amount (KSh)</label><input type="number" id="amount"></div>
+                <div class="form-group"><label>Due Date</label><input type="date" id="dueDate"></div>
+                <div class="form-group"><label>Status</label><select id="status"><option>Pending</option><option>Paid</option></select></div>
+            </div>
+            <button class="btn-submit" onclick="addFee()">Add Fee Record</button>
+        </div>
+        <div class="table-card">
+            <h2 class="form-title">📋 Fee Records</h2>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Student</th><th>Amount (KSh)</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="feeList"></tbody></table></div>
+        </div>
+        <div class="footer"><p>Dawamu School Management System</p></div>
+    </div>
+    <script>
+        let fees = JSON.parse(localStorage.getItem('fees')) || [
+            { student: "James Mwangi", amount: 15000, dueDate: "2026-06-30", status: "Pending" },
+            { student: "Brian Otieno", amount: 15000, dueDate: "2026-06-15", status: "Paid" },
+            { student: "Alex Kimani", amount: 18000, dueDate: "2026-07-10", status: "Pending" }
+        ];
+        function saveFees() { localStorage.setItem('fees', JSON.stringify(fees)); }
+        function updateStats() {
+            let total = 0, pending = 0;
+            fees.forEach(fee => { if(fee.status === "Paid") total += fee.amount; else pending += fee.amount; });
+            document.getElementById('totalCollected').innerText = `KSh ${total.toLocaleString()}`;
+            document.getElementById('totalPending').innerText = `KSh ${pending.toLocaleString()}`;
+            document.getElementById('totalStudents').innerText = fees.length;
+        }
+        function displayFees() {
+            const tbody = document.getElementById('feeList');
+            tbody.innerHTML = '';
+            fees.forEach((fee, i) => {
+                tbody.innerHTML += `<tr><td>${fee.student}</td><td>KSh ${fee.amount.toLocaleString()}</td><td>${fee.dueDate}</td><td class="${fee.status === 'Paid' ? 'status-paid' : 'status-pending'}">${fee.status}</td><td>${fee.status === 'Pending' ? `<button class="pay-btn" onclick="markPaid(${i})">Mark Paid</button>` : '✓ Paid'}</td></tr>`;
+            });
+            updateStats(); saveFees();
+        }
+        function addFee() {
+            const student = document.getElementById('studentName').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const dueDate = document.getElementById('dueDate').value;
+            const status = document.getElementById('status').value;
+            if(student && amount) { fees.push({ student, amount, dueDate, status }); displayFees(); document.getElementById('studentName').value = ''; document.getElementById('amount').value = ''; alert('Fee record added!'); }
+            else alert('Please fill required fields');
+        }
+        function markPaid(i) { fees[i].status = "Paid"; displayFees(); }
+        displayFees();
+    </script>
+</body>
+</html>

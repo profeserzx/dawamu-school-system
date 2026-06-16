@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dawamu School - Login</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8DB600, #6B8E00);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .login-container img { width: 80px; margin-bottom: 20px; }
+        .login-container h1 { color: #8DB600; margin-bottom: 5px; }
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background: #8DB600;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .error { color: red; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="images/Logo.png" alt="Logo">
+        <h1>DAWAMU SCHOOL</h1>
+        <p id="portalText">Admin Portal Login</p>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const portal = urlParams.get('portal') || 'admin';
+        
+        const titles = {
+            admin: 'Admin Portal Login',
+            teacher: 'Teacher Portal Login',
+            parent: 'Parent Portal Login'
+        };
+        document.getElementById('portalText').innerText = titles[portal];
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+            
+            errorDiv.style.display = 'none';
+            
+            try {
+                const res = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    if (portal === 'admin' && data.user.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else if (portal === 'teacher' && data.user.role === 'teacher') {
+                        window.location.href = 'teacher-dashboard.html';
+                    } else if (portal === 'parent' && data.user.role === 'parent') {
+                        window.location.href = 'parent-dashboard.html';
+                    } else {
+                        errorDiv.innerText = 'Invalid credentials for this portal';
+                        errorDiv.style.display = 'block';
+                    }
+                } else {
+                    errorDiv.innerText = data.message || 'Login failed';
+                    errorDiv.style.display = 'block';
+                }
+            } catch(err) {
+                errorDiv.innerText = 'Server error. Make sure backend is running.';
+                errorDiv.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

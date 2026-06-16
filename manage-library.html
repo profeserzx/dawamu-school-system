@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dawamu School - Library Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F0F5E6; }
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #8DB600;
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; }
+        .logo h1 { color: #8DB600; }
+        .back-btn { background: #8DB600; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; text-decoration: none; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 5px solid #8DB600;
+        }
+        .stat-card h3 { color: #666; font-size: 14px; }
+        .stat-card .number { font-size: 32px; font-weight: bold; color: #8DB600; }
+        .form-card, .table-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .form-title { color: #8DB600; margin-bottom: 20px; }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .btn-submit { background: #8DB600; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #8DB600; color: white; }
+        .available { color: #4caf50; font-weight: bold; }
+        .borrowed { color: #f44336; font-weight: bold; }
+        .borrow-btn, .return-btn { padding: 5px 12px; border: none; border-radius: 5px; cursor: pointer; }
+        .borrow-btn { background: #2196f3; color: white; }
+        .return-btn { background: #ff9800; color: white; }
+        .footer { text-align: center; padding: 20px; color: #666; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="images/Logo.png" alt="Logo"><h1>DAWAMU SCHOOL - Library</h1></div>
+        <a href="admin-dashboard.html" class="back-btn">← Back</a>
+    </div>
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card"><h3>Total Books</h3><div class="number" id="totalBooks">0</div></div>
+            <div class="stat-card"><h3>Available</h3><div class="number" id="availableBooks">0</div></div>
+            <div class="stat-card"><h3>Borrowed</h3><div class="number" id="borrowedBooks">0</div></div>
+        </div>
+        <div class="form-card">
+            <h2 class="form-title">📖 Add New Book</h2>
+            <div class="form-row">
+                <div class="form-group"><label>Book Title</label><input type="text" id="title"></div>
+                <div class="form-group"><label>Author</label><input type="text" id="author"></div>
+                <div class="form-group"><label>ISBN</label><input type="text" id="isbn"></div>
+            </div>
+            <button class="btn-submit" onclick="addBook()">Add Book</button>
+        </div>
+        <div class="table-card">
+            <h2 class="form-title">📚 Library Collection</h2>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Title</th><th>Author</th><th>ISBN</th><th>Status</th><th>Action</th></tr></thead><tbody id="booksList"></tbody></table></div>
+        </div>
+        <div class="footer"><p>Dawamu School Management System</p></div>
+    </div>
+    <script>
+        let books = JSON.parse(localStorage.getItem('libraryBooks')) || [
+            { title: "The Great Gatsby", author: "F. Scott Fitzgerald", isbn: "978-0-7432-7356-5", status: "Available", borrower: null },
+            { title: "To Kill a Mockingbird", author: "Harper Lee", isbn: "978-0-06-112008-4", status: "Borrowed", borrower: "John Doe" }
+        ];
+        function saveBooks() { localStorage.setItem('libraryBooks', JSON.stringify(books)); }
+        function updateStats() {
+            const total = books.length;
+            const available = books.filter(b => b.status === "Available").length;
+            document.getElementById('totalBooks').innerText = total;
+            document.getElementById('availableBooks').innerText = available;
+            document.getElementById('borrowedBooks').innerText = total - available;
+        }
+        function displayBooks() {
+            const tbody = document.getElementById('booksList');
+            tbody.innerHTML = '';
+            books.forEach((book, i) => {
+                tbody.innerHTML += `<tr><td>${book.title}</td><td>${book.author}</td><td>${book.isbn}</td><td class="${book.status === 'Available' ? 'available' : 'borrowed'}">${book.status}${book.borrower ? ` (${book.borrower})` : ''}</td><td>${book.status === 'Available' ? `<button class="borrow-btn" onclick="borrowBook(${i})">Borrow</button>` : `<button class="return-btn" onclick="returnBook(${i})">Return</button>`}</td></tr>`;
+            });
+            updateStats(); saveBooks();
+        }
+        function addBook() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const isbn = document.getElementById('isbn').value;
+            if(title && author) { books.push({ title, author, isbn, status: "Available", borrower: null }); displayBooks(); document.getElementById('title').value = ''; document.getElementById('author').value = ''; document.getElementById('isbn').value = ''; alert('Book added!'); }
+            else alert('Please fill title and author');
+        }
+        function borrowBook(i) { const borrower = prompt("Enter student/staff name:"); if(borrower) { books[i].status = "Borrowed"; books[i].borrower = borrower; displayBooks(); alert(`Book borrowed by ${borrower}`); } }
+        function returnBook(i) { books[i].status = "Available"; books[i].borrower = null; displayBooks(); alert("Book returned!"); }
+        displayBooks();
+    </script>
+</body>
+</html>

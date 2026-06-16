@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dawamu School - Attendance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F0F5E6; }
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #8DB600;
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; }
+        .logo h1 { color: #8DB600; }
+        .back-btn { background: #8DB600; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; text-decoration: none; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 5px solid #8DB600;
+        }
+        .stat-card h3 { color: #666; font-size: 14px; }
+        .stat-card .number { font-size: 28px; font-weight: bold; color: #8DB600; }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .date-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        input[type="date"], select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .btn-submit { background: #8DB600; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #8DB600; color: white; }
+        .present-btn, .absent-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 3px;
+        }
+        .present-btn { background: #4caf50; color: white; }
+        .absent-btn { background: #f44336; color: white; }
+        .status-present { color: #4caf50; font-weight: bold; }
+        .status-absent { color: #f44336; font-weight: bold; }
+        .footer { text-align: center; padding: 20px; color: #666; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="images/Logo.png" alt="Logo"><h1>DAWAMU SCHOOL - Attendance</h1></div>
+        <a href="teacher-dashboard.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card"><h3>Today's Present</h3><div class="number" id="presentCount">0</div></div>
+            <div class="stat-card"><h3>Today's Absent</h3><div class="number" id="absentCount">0</div></div>
+            <div class="stat-card"><h3>Attendance Rate</h3><div class="number" id="attRate">0%</div></div>
+            <div class="stat-card"><h3>Total Students</h3><div class="number" id="totalStudents">0</div></div>
+        </div>
+        
+        <div class="card">
+            <h2 style="color:#8DB600; margin-bottom:20px;">✅ Mark Attendance</h2>
+            <div class="date-selector">
+                <label><strong>Select Date:</strong></label>
+                <input type="date" id="attendanceDate">
+                <label><strong>Select Class:</strong></label>
+                <select id="classFilter">
+                    <option value="">All Classes</option>
+                    <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+                    <option>Form 3</option><option>Form 4</option>
+                </select>
+                <button class="btn-submit" onclick="loadAttendance()">Load Students</button>
+            </div>
+            
+            <div id="attendanceContainer"></div>
+        </div>
+        <div class="footer"><p>Dawamu School Teacher Portal</p></div>
+    </div>
+    
+    <script>
+        let students = JSON.parse(localStorage.getItem('attendanceStudents')) || [
+            { id: "DAW/2024/001", name: "James Mwangi", grade: "Grade 8" },
+            { id: "DAW/2024/002", name: "Brian Otieno", grade: "Grade 8" },
+            { id: "DAW/2024/003", name: "Alex Kimani", grade: "Form 3" },
+            { id: "DAW/2024/004", name: "Michael Omondi", grade: "Grade 7" }
+        ];
+        
+        let attendance = JSON.parse(localStorage.getItem('teacherAttendance')) || {};
+        
+        function updateStats(present, absent, total) {
+            document.getElementById('presentCount').innerText = present;
+            document.getElementById('absentCount').innerText = absent;
+            document.getElementById('attRate').innerText = total > 0 ? Math.round((present/total)*100) + '%' : '0%';
+            document.getElementById('totalStudents').innerText = total;
+        }
+        
+        function loadAttendance() {
+            const date = document.getElementById('attendanceDate').value;
+            const grade = document.getElementById('classFilter').value;
+            if(!date) { alert('Please select a date'); return; }
+            
+            let filtered = students;
+            if(grade) filtered = students.filter(s => s.grade === grade);
+            
+            let present = 0, absent = 0;
+            let html = '<div style="overflow-x: auto;"><table><thead><tr><th>Adm No</th><th>Student Name</th><th>Grade/Form</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+            
+            filtered.forEach(s => {
+                const status = attendance[`${date}_${s.id}`] || 'present';
+                if(status === 'present') present++;
+                else absent++;
+                html += `<tr>
+                    <td>${s.id}</td>
+                    <td>${s.name}</td>
+                    <td>${s.grade}</td>
+                    <td class="status-${status}">${status.toUpperCase()}</td>
+                    <td>
+                        <button class="present-btn" onclick="markAttendance('${s.id}', 'present')">Present</button>
+                        <button class="absent-btn" onclick="markAttendance('${s.id}', 'absent')">Absent</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div><button class="btn-submit" style="margin-top:20px" onclick="saveAttendance()">💾 Save Attendance</button>';
+            document.getElementById('attendanceContainer').innerHTML = html;
+            updateStats(present, absent, filtered.length);
+        }
+        
+        function markAttendance(studentId, status) {
+            const date = document.getElementById('attendanceDate').value;
+            attendance[`${date}_${studentId}`] = status;
+            loadAttendance();
+        }
+        
+        function saveAttendance() {
+            localStorage.setItem('teacherAttendance', JSON.stringify(attendance));
+            alert('Attendance saved successfully!');
+        }
+    </script>
+</body>
+</html>
+EOFcat > teacher-attendance.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dawamu School - Attendance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F0F5E6; }
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #8DB600;
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; }
+        .logo h1 { color: #8DB600; }
+        .back-btn { background: #8DB600; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; text-decoration: none; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 5px solid #8DB600;
+        }
+        .stat-card h3 { color: #666; font-size: 14px; }
+        .stat-card .number { font-size: 28px; font-weight: bold; color: #8DB600; }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .date-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        input[type="date"], select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .btn-submit { background: #8DB600; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #8DB600; color: white; }
+        .present-btn, .absent-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 3px;
+        }
+        .present-btn { background: #4caf50; color: white; }
+        .absent-btn { background: #f44336; color: white; }
+        .status-present { color: #4caf50; font-weight: bold; }
+        .status-absent { color: #f44336; font-weight: bold; }
+        .footer { text-align: center; padding: 20px; color: #666; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="images/Logo.png" alt="Logo"><h1>DAWAMU SCHOOL - Attendance</h1></div>
+        <a href="teacher-dashboard.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card"><h3>Today's Present</h3><div class="number" id="presentCount">0</div></div>
+            <div class="stat-card"><h3>Today's Absent</h3><div class="number" id="absentCount">0</div></div>
+            <div class="stat-card"><h3>Attendance Rate</h3><div class="number" id="attRate">0%</div></div>
+            <div class="stat-card"><h3>Total Students</h3><div class="number" id="totalStudents">0</div></div>
+        </div>
+        
+        <div class="card">
+            <h2 style="color:#8DB600; margin-bottom:20px;">✅ Mark Attendance</h2>
+            <div class="date-selector">
+                <label><strong>Select Date:</strong></label>
+                <input type="date" id="attendanceDate">
+                <label><strong>Select Class:</strong></label>
+                <select id="classFilter">
+                    <option value="">All Classes</option>
+                    <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+                    <option>Form 3</option><option>Form 4</option>
+                </select>
+                <button class="btn-submit" onclick="loadAttendance()">Load Students</button>
+            </div>
+            
+            <div id="attendanceContainer"></div>
+        </div>
+        <div class="footer"><p>Dawamu School Teacher Portal</p></div>
+    </div>
+    
+    <script>
+        let students = JSON.parse(localStorage.getItem('attendanceStudents')) || [
+            { id: "DAW/2024/001", name: "James Mwangi", grade: "Grade 8" },
+            { id: "DAW/2024/002", name: "Brian Otieno", grade: "Grade 8" },
+            { id: "DAW/2024/003", name: "Alex Kimani", grade: "Form 3" },
+            { id: "DAW/2024/004", name: "Michael Omondi", grade: "Grade 7" }
+        ];
+        
+        let attendance = JSON.parse(localStorage.getItem('teacherAttendance')) || {};
+        
+        function updateStats(present, absent, total) {
+            document.getElementById('presentCount').innerText = present;
+            document.getElementById('absentCount').innerText = absent;
+            document.getElementById('attRate').innerText = total > 0 ? Math.round((present/total)*100) + '%' : '0%';
+            document.getElementById('totalStudents').innerText = total;
+        }
+        
+        function loadAttendance() {
+            const date = document.getElementById('attendanceDate').value;
+            const grade = document.getElementById('classFilter').value;
+            if(!date) { alert('Please select a date'); return; }
+            
+            let filtered = students;
+            if(grade) filtered = students.filter(s => s.grade === grade);
+            
+            let present = 0, absent = 0;
+            let html = '<div style="overflow-x: auto;"><table><thead><tr><th>Adm No</th><th>Student Name</th><th>Grade/Form</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+            
+            filtered.forEach(s => {
+                const status = attendance[`${date}_${s.id}`] || 'present';
+                if(status === 'present') present++;
+                else absent++;
+                html += `<tr>
+                    <td>${s.id}</td>
+                    <td>${s.name}</td>
+                    <td>${s.grade}</td>
+                    <td class="status-${status}">${status.toUpperCase()}</td>
+                    <td>
+                        <button class="present-btn" onclick="markAttendance('${s.id}', 'present')">Present</button>
+                        <button class="absent-btn" onclick="markAttendance('${s.id}', 'absent')">Absent</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div><button class="btn-submit" style="margin-top:20px" onclick="saveAttendance()">💾 Save Attendance</button>';
+            document.getElementById('attendanceContainer').innerHTML = html;
+            updateStats(present, absent, filtered.length);
+        }
+        
+        function markAttendance(studentId, status) {
+            const date = document.getElementById('attendanceDate').value;
+            attendance[`${date}_${studentId}`] = status;
+            loadAttendance();
+        }
+        
+        function saveAttendance() {
+            localStorage.setItem('teacherAttendance', JSON.stringify(attendance));
+            alert('Attendance saved successfully!');
+        }
+    </script>
+</body>
+</html>
