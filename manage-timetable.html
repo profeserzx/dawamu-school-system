@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dawamu School - Timetable</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F0F5E6; }
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #8DB600;
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; }
+        .logo h1 { color: #8DB600; }
+        .back-btn {
+            background: #8DB600;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .selector {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .selector select, .selector input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+        .btn-submit {
+            background: #8DB600;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .timetable {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            overflow-x: auto;
+        }
+        .timetable h2 { color: #8DB600; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: center; border: 1px solid #ddd; min-width: 100px; }
+        th { background: #8DB600; color: white; }
+        td { background: white; }
+        .subject-cell { background: #F0F5E6; border-radius: 5px; padding: 5px; }
+        .edit-btn, .delete-btn { padding: 3px 10px; border: none; border-radius: 3px; cursor: pointer; margin: 2px; }
+        .edit-btn { background: #2196f3; color: white; }
+        .delete-btn { background: #f44336; color: white; }
+        .add-session {
+            margin-top: 20px;
+            padding: 15px;
+            background: #F0F5E6;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .add-session input, .add-session select {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .footer { text-align: center; padding: 20px; color: #666; margin-top: 30px; }
+        .time-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+        .time-slot { background: #F0F5E6; padding: 5px; border-radius: 5px; text-align: center; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="images/Logo.png" alt="Logo"><h1>DAWAMU SCHOOL - Timetable</h1></div>
+        <a href="admin-dashboard.html" class="back-btn">← Back</a>
+    </div>
+    
+    <div class="container">
+        <div class="selector">
+            <label><strong>Select Grade/Form:</strong></label>
+            <select id="classSelect">
+                <option value="Grade 7">Grade 7</option>
+                <option value="Grade 8">Grade 8</option>
+                <option value="Grade 9">Grade 9</option>
+                <option value="Form 3">Form 3</option>
+                <option value="Form 4">Form 4</option>
+            </select>
+            <label><strong>Select Term:</strong></label>
+            <select id="termSelect">
+                <option value="Term 1">Term 1</option>
+                <option value="Term 2">Term 2</option>
+                <option value="Term 3">Term 3</option>
+            </select>
+            <button class="btn-submit" onclick="loadTimetable()">Load Timetable</button>
+        </div>
+        
+        <div class="timetable">
+            <h2 id="timetableTitle">📅 Grade 7 - Term 1 Timetable</h2>
+            <div id="timetableDisplay"></div>
+            
+            <div class="add-session">
+                <h3 style="width:100%; color:#8DB600;">➕ Add Session</h3>
+                <select id="daySelect"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select>
+                <select id="periodSelect"><option>Period 1</option><option>Period 2</option><option>Period 3</option><option>Period 4</option><option>Period 5</option></select>
+                <input type="text" id="subjectInput" placeholder="Subject (e.g., Mathematics)">
+                <input type="text" id="teacherInput" placeholder="Teacher Name">
+                <button class="btn-submit" onclick="addSession()">Add Session</button>
+            </div>
+        </div>
+        <div class="footer"><p>Dawamu School Management System - Timetable</p></div>
+    </div>
+    
+    <script>
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        const periods = ['Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5'];
+        
+        // Default timetable data
+        const defaultTimetable = {
+            'Grade 7': {
+                'Term 1': {
+                    'Monday': ['Mathematics', 'English', 'Science', 'Kiswahili', 'History'],
+                    'Tuesday': ['Science', 'Mathematics', 'English', 'History', 'Kiswahili'],
+                    'Wednesday': ['English', 'Science', 'Kiswahili', 'Mathematics', 'History'],
+                    'Thursday': ['Kiswahili', 'History', 'Mathematics', 'English', 'Science'],
+                    'Friday': ['History', 'Kiswahili', 'Science', 'Mathematics', 'English']
+                }
+            },
+            'Grade 8': {
+                'Term 1': {
+                    'Monday': ['English', 'Mathematics', 'Science', 'History', 'Kiswahili'],
+                    'Tuesday': ['Mathematics', 'Science', 'English', 'Kiswahili', 'History'],
+                    'Wednesday': ['Science', 'English', 'History', 'Mathematics', 'Kiswahili'],
+                    'Thursday': ['History', 'Kiswahili', 'Mathematics', 'Science', 'English'],
+                    'Friday': ['Kiswahili', 'History', 'English', 'Mathematics', 'Science']
+                }
+            }
+        };
+        
+        let timetable = JSON.parse(localStorage.getItem('timetable')) || defaultTimetable;
+        
+        function saveTimetable() {
+            localStorage.setItem('timetable', JSON.stringify(timetable));
+        }
+        
+        function loadTimetable() {
+            const class_ = document.getElementById('classSelect').value;
+            const term = document.getElementById('termSelect').value;
+            
+            document.getElementById('timetableTitle').innerText = `📅 ${class_} - ${term} Timetable`;
+            
+            // Initialize if not exists
+            if (!timetable[class_]) timetable[class_] = {};
+            if (!timetable[class_][term]) {
+                timetable[class_][term] = {};
+                days.forEach(day => {
+                    timetable[class_][term][day] = periods.map(() => 'Free');
+                });
+            }
+            
+            let html = '<table><thead><tr><th>Day/Period</th>';
+            periods.forEach(p => html += `<th>${p}</th>`);
+            html += '</tr></thead><tbody>';
+            
+            days.forEach(day => {
+                html += `<tr><td><strong>${day}</strong></td>`;
+                const subjects = timetable[class_][term][day] || periods.map(() => 'Free');
+                subjects.forEach((subject, i) => {
+                    html += `<td>
+                        <div class="subject-cell">${subject}</div>
+                        <button class="edit-btn" onclick="editSession('${class_}', '${term}', '${day}', ${i})">✏️</button>
+                        <button class="delete-btn" onclick="deleteSession('${class_}', '${term}', '${day}', ${i})">🗑️</button>
+                    </td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('timetableDisplay').innerHTML = html;
+            saveTimetable();
+        }
+        
+        function addSession() {
+            const class_ = document.getElementById('classSelect').value;
+            const term = document.getElementById('termSelect').value;
+            const day = document.getElementById('daySelect').value;
+            const period = parseInt(document.getElementById('periodSelect').value.split(' ')[1]) - 1;
+            const subject = document.getElementById('subjectInput').value;
+            const teacher = document.getElementById('teacherInput').value;
+            
+            if (!subject || !teacher) {
+                alert('Please enter both subject and teacher');
+                return;
+            }
+            
+            if (!timetable[class_]) timetable[class_] = {};
+            if (!timetable[class_][term]) timetable[class_][term] = {};
+            if (!timetable[class_][term][day]) timetable[class_][term][day] = periods.map(() => 'Free');
+            
+            timetable[class_][term][day][period] = `${subject} (${teacher})`;
+            loadTimetable();
+            document.getElementById('subjectInput').value = '';
+            document.getElementById('teacherInput').value = '';
+            alert('Session added successfully!');
+        }
+        
+        function editSession(class_, term, day, period) {
+            const current = timetable[class_][term][day][period];
+            const newSubject = prompt('Enter new subject:', current);
+            if (newSubject !== null) {
+                timetable[class_][term][day][period] = newSubject || 'Free';
+                loadTimetable();
+            }
+        }
+        
+        function deleteSession(class_, term, day, period) {
+            if (confirm('Remove this session?')) {
+                timetable[class_][term][day][period] = 'Free';
+                loadTimetable();
+            }
+        }
+        
+        // Load default timetable on page load
+        window.onload = function() {
+            loadTimetable();
+        };
+    </script>
+</body>
+</html>

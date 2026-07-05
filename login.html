@@ -5,107 +5,171 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dawamu School - Login</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #8DB600, #6B8E00);
+            background: linear-gradient(135deg, #8DB600 0%, #6B8E00 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
         }
         .login-container {
             background: white;
-            padding: 40px;
             border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 40px;
         }
-        .login-container img { width: 80px; margin-bottom: 20px; }
-        .login-container h1 { color: #8DB600; margin-bottom: 5px; }
-        .login-container input {
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header img { height: 80px; margin-bottom: 15px; }
+        .login-header h1 { color: #8DB600; font-size: 28px; }
+        .login-header .tagline { color: #666; font-size: 12px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        input {
             width: 100%;
             padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            box-sizing: border-box;
+            font-size: 14px;
         }
-        .login-container button {
+        input:focus { outline: none; border-color: #8DB600; }
+        .login-btn {
             width: 100%;
             padding: 12px;
             background: #8DB600;
             color: white;
             border: none;
             border-radius: 8px;
-            cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
+            font-weight: bold;
+            cursor: pointer;
         }
-        .error { color: red; margin-top: 10px; display: none; }
+        .login-btn:hover { background: #6B8E00; }
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+        .demo-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #F0F5E6;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            border-left: 4px solid #8DB600;
+        }
+        .demo-info strong { color: #8DB600; }
+        .back-link { text-align: center; margin-top: 15px; }
+        .back-link a { color: #8DB600; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <img src="images/Logo.png" alt="Logo">
-        <h1>DAWAMU SCHOOL</h1>
-        <p id="portalText">Admin Portal Login</p>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <div id="error" class="error"></div>
+        <div class="login-header">
+            <img src="images/Logo.png" alt="Dawamu School">
+            <h1>DAWAMU SCHOOL</h1>
+            <p class="tagline" id="portalText">Parent Portal</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="login-btn" id="loginBtn">Login</button>
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+        
+        <div class="demo-info" id="demoInfo">
+            <strong>Demo Account:</strong><br>
+            Email: parent@dawamu.com<br>
+            Password: parent123
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">← Back to Main Site</a>
+        </div>
     </div>
 
     <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        // Get portal from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const portal = urlParams.get('portal') || 'admin';
+        const portal = urlParams.get('portal') || 'parent';
         
-        const titles = {
-            admin: 'Admin Portal Login',
-            teacher: 'Teacher Portal Login',
-            parent: 'Parent Portal Login'
+        // Set portal-specific text
+        const portalTexts = {
+            parent: { title: 'Parent Portal', btn: 'Login as Parent', demo: 'Demo Parent Account:', email: 'parent@dawamu.com', pass: 'parent123' },
+            admin: { title: 'Admin Portal', btn: 'Login as Admin', demo: 'Demo Admin Account:', email: 'admin@dawamu.com', pass: 'admin123' },
+            teacher: { title: 'Teacher Portal', btn: 'Login as Teacher', demo: 'Demo Teacher Account:', email: 'teacher@dawamu.com', pass: 'teacher123' }
         };
-        document.getElementById('portalText').innerText = titles[portal];
         
-        async function login() {
+        const info = portalTexts[portal] || portalTexts.parent;
+        
+        document.getElementById('portalText').innerText = info.title;
+        document.getElementById('loginBtn').innerText = info.btn;
+        document.getElementById('demoInfo').innerHTML = `
+            <strong>${info.demo}</strong><br>
+            Email: ${info.email}<br>
+            Password: ${info.pass}
+        `;
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error');
+            const errorDiv = document.getElementById('errorMessage');
             
             errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
             
             try {
-                const res = await fetch('http://localhost:5000/api/login', {
+                let endpoint = '';
+                let redirectPage = '';
+                
+                if (portal === 'parent') {
+                    endpoint = `${API_URL}/parent-login`;
+                    redirectPage = 'parent-dashboard.html';
+                } else {
+                    endpoint = `${API_URL}/login`;
+                    redirectPage = portal === 'admin' ? 'admin-dashboard.html' : 'teacher-dashboard.html';
+                }
+                
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
+                
                 const data = await res.json();
                 
                 if (data.success) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    if (portal === 'admin' && data.user.role === 'admin') {
-                        window.location.href = 'admin-dashboard.html';
-                    } else if (portal === 'teacher' && data.user.role === 'teacher') {
-                        window.location.href = 'teacher-dashboard.html';
-                    } else if (portal === 'parent' && data.user.role === 'parent') {
-                        window.location.href = 'parent-dashboard.html';
-                    } else {
-                        errorDiv.innerText = 'Invalid credentials for this portal';
-                        errorDiv.style.display = 'block';
-                    }
+                    window.location.href = redirectPage;
                 } else {
-                    errorDiv.innerText = data.message || 'Login failed';
+                    errorDiv.textContent = data.message || 'Login failed. Please check your credentials.';
                     errorDiv.style.display = 'block';
                 }
             } catch(err) {
-                errorDiv.innerText = 'Server error. Make sure backend is running.';
+                errorDiv.textContent = 'Server error. Please try again.';
                 errorDiv.style.display = 'block';
             }
-        }
+        });
     </script>
 </body>
 </html>

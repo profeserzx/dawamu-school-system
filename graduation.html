@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dawamu School - Graduation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F0F5E6; }
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #8DB600;
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; }
+        .logo h1 { color: #8DB600; }
+        .back-btn {
+            background: #8DB600;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 5px solid #8DB600;
+        }
+        .stat-card h3 { color: #666; font-size: 14px; }
+        .stat-card .number { font-size: 32px; font-weight: bold; color: #8DB600; }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .card h2 { color: #8DB600; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .btn-submit {
+            background: #8DB600;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-cert {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #8DB600; color: white; }
+        .graduated { color: #4caf50; font-weight: bold; }
+        .pending { color: #ff9800; font-weight: bold; }
+        .student-card {
+            background: #F0F5E6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #8DB600;
+        }
+        .footer { text-align: center; padding: 20px; color: #666; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="images/Logo.png" alt="Logo"><h1>DAWAMU SCHOOL - Graduation</h1></div>
+        <a href="admin-dashboard.html" class="back-btn">← Back</a>
+    </div>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card"><h3>🎓 Total Graduates</h3><div class="number" id="totalGraduates">156</div></div>
+            <div class="stat-card"><h3>📋 Pending</h3><div class="number" id="pendingGraduates">12</div></div>
+            <div class="stat-card"><h3>🏆 Top Performance</h3><div class="number" id="topPerformer" style="font-size:20px;">Alex Kimani</div></div>
+        </div>
+        
+        <div class="card">
+            <h2>🎓 Add Graduating Student</h2>
+            <div class="form-group">
+                <label>Student Name</label>
+                <select id="studentSelect">
+                    <option value="James Mwangi">James Mwangi - Grade 8</option>
+                    <option value="Brian Otieno">Brian Otieno - Grade 8</option>
+                    <option value="Alex Kimani">Alex Kimani - Form 4</option>
+                    <option value="Michael Omondi">Michael Omondi - Grade 7</option>
+                    <option value="Samuel Kiprop">Samuel Kiprop - Form 4</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Graduation Year</label>
+                <input type="number" id="gradYear" value="2026">
+            </div>
+            <div class="form-group">
+                <label>Grade/Form Completed</label>
+                <select id="completedGrade">
+                    <option value="Grade 8">Grade 8</option>
+                    <option value="Form 4">Form 4</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Achievements</label>
+                <input type="text" id="achievements" placeholder="e.g., Best Mathematics Student, Sports Captain">
+            </div>
+            <button class="btn-submit" onclick="addGraduate()">🎓 Add Graduate</button>
+        </div>
+        
+        <div class="card">
+            <h2>📋 Graduation List</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>Name</th><th>Year</th><th>Completed</th><th>Achievements</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="gradList"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🏆 Graduation Gallery</h2>
+            <div id="galleryContainer">
+                <div class="student-card">
+                    <strong>James Mwangi</strong> - Grade 8 (2026)
+                    <span style="float:right; color:#4caf50;">✓ Graduated</span>
+                    <p style="font-size:12px; color:#666;">Achievements: Best Mathematics Student</p>
+                </div>
+                <div class="student-card">
+                    <strong>Brian Otieno</strong> - Grade 8 (2026)
+                    <span style="float:right; color:#4caf50;">✓ Graduated</span>
+                    <p style="font-size:12px; color:#666;">Achievements: Most Improved Student</p>
+                </div>
+                <div class="student-card">
+                    <strong>Alex Kimani</strong> - Form 4 (2026)
+                    <span style="float:right; color:#4caf50;">✓ Graduated</span>
+                    <p style="font-size:12px; color:#666;">Achievements: Best Overall Student, Sports Captain</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer"><p>Dawamu School - Graduation Management</p></div>
+    </div>
+    
+    <script>
+        let graduates = JSON.parse(localStorage.getItem('graduates')) || [
+            { name: "James Mwangi", year: 2026, completed: "Grade 8", achievements: "Best Mathematics Student", status: "Graduated" },
+            { name: "Brian Otieno", year: 2026, completed: "Grade 8", achievements: "Most Improved Student", status: "Graduated" },
+            { name: "Alex Kimani", year: 2026, completed: "Form 4", achievements: "Best Overall Student, Sports Captain", status: "Graduated" }
+        ];
+        
+        function saveGraduates() {
+            localStorage.setItem('graduates', JSON.stringify(graduates));
+        }
+        
+        function updateStats() {
+            const total = graduates.length;
+            const pending = graduates.filter(g => g.status === "Pending").length;
+            document.getElementById('totalGraduates').innerText = total;
+            document.getElementById('pendingGraduates').innerText = pending;
+            if (graduates.length > 0) {
+                const top = graduates.reduce((a, b) => a.achievements.length > b.achievements.length ? a : b);
+                document.getElementById('topPerformer').innerText = top.name;
+            }
+        }
+        
+        function displayGraduates() {
+            const tbody = document.getElementById('gradList');
+            tbody.innerHTML = '';
+            graduates.forEach((g, i) => {
+                tbody.innerHTML += `<tr>
+                    <td>${g.name}</td>
+                    <td>${g.year}</td>
+                    <td>${g.completed}</td>
+                    <td>${g.achievements || 'N/A'}</td>
+                    <td class="${g.status === 'Graduated' ? 'graduated' : 'pending'}">${g.status}</td>
+                    <td>
+                        <button class="btn-cert" onclick="generateCert(${i})">📄 Cert</button>
+                        <button class="btn-cert" style="background:#f44336;" onclick="removeGraduate(${i})">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+            updateStats();
+            saveGraduates();
+        }
+        
+        function addGraduate() {
+            const name = document.getElementById('studentSelect').value;
+            const year = document.getElementById('gradYear').value;
+            const completed = document.getElementById('completedGrade').value;
+            const achievements = document.getElementById('achievements').value || 'N/A';
+            
+            graduates.push({ name, year: parseInt(year), completed, achievements, status: "Graduated" });
+            displayGraduates();
+            document.getElementById('achievements').value = '';
+            alert('🎓 Student added to graduation list!');
+        }
+        
+        function removeGraduate(i) {
+            if (confirm(`Remove ${graduates[i].name} from graduation list?`)) {
+                graduates.splice(i, 1);
+                displayGraduates();
+            }
+        }
+        
+        function generateCert(i) {
+            const g = graduates[i];
+            alert(`🎓 GENERATING CERTIFICATE\n\nName: ${g.name}\nCompleted: ${g.completed}\nYear: ${g.year}\nAchievements: ${g.achievements}\n\nCertificate would be downloaded as PDF.`);
+        }
+        
+        displayGraduates();
+        
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
+    </script>
+</body>
+</html>

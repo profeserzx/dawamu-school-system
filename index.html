@@ -6,98 +6,77 @@
     <title>Dawamu School - Home</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar {
-            background: white;
-            padding: 15px 30px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8DB600 0%, #6B8E00 100%);
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .logo { display: flex; align-items: center; gap: 15px; }
-        .logo img { height: 50px; }
-        .logo h1 { color: #8DB600; }
-        .hero {
-            background: linear-gradient(135deg, #F0F5E6, white);
-            padding: 80px 30px;
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 500px;
+            padding: 50px;
             text-align: center;
         }
-        .hero h1 { font-size: 48px; color: #8DB600; margin-bottom: 20px; }
-        .portals {
-            padding: 60px 30px;
-            background: #F0F5E6;
+        .logo img { height: 100px; margin-bottom: 20px; }
+        h1 { color: #8DB600; font-size: 32px; margin-bottom: 5px; }
+        .tagline { color: #666; font-size: 14px; margin-bottom: 30px; }
+        .portal-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            max-width: 1000px;
-            margin: 0 auto;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
         }
         .portal-card {
-            background: white;
-            padding: 30px;
+            background: #F0F5E6;
+            padding: 25px 15px;
             border-radius: 15px;
-            text-align: center;
             cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
-        .portal-card:hover { transform: translateY(-5px); }
-        .portal-card h3 { color: #8DB600; margin: 15px 0; }
-        .portal-card button {
-            background: #8DB600;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
+        .portal-card:hover {
+            transform: translateY(-5px);
+            border-color: #8DB600;
+            box-shadow: 0 5px 20px rgba(141, 182, 0, 0.2);
         }
-        .footer {
-            background: #1a1a1a;
-            color: white;
-            text-align: center;
-            padding: 30px;
-        }
+        .portal-card .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+        .portal-card h3 { color: #333; font-size: 16px; }
+        .portal-card p { color: #666; font-size: 12px; margin-top: 5px; }
+        .footer { color: #999; font-size: 12px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="navbar">
+    <div class="container">
         <div class="logo">
-            <img src="images/Logo.png" alt="Logo">
-            <h1>DAWAMU SCHOOL</h1>
+            <img src="images/Logo.png" alt="Dawamu School">
         </div>
-    </div>
-    
-    <div class="hero">
-        <h1>Transforming Boys Into Leaders</h1>
-        <p>Complete School Management System</p>
-    </div>
-    
-    <div class="portals">
-        <div class="portal-card">
-            <div style="font-size: 50px;">👨‍💼</div>
-            <h3>Admin Portal</h3>
-            <p>Manage students, fees, library, subjects</p>
-            <button onclick="location.href='login.html?portal=admin'">Login as Admin</button>
+        <h1>DAWAMU SCHOOL</h1>
+        <p class="tagline">Transforming Boys Into Leaders</p>
+        
+        <div class="portal-grid">
+            <div class="portal-card" onclick="location.href='parent-login.html'">
+                <span class="icon">👨‍👩‍👧</span>
+                <h3>Parent Portal</h3>
+                <p>Track your child's progress</p>
+            </div>
+            <div class="portal-card" onclick="location.href='admin-login.html'">
+                <span class="icon">👨‍💼</span>
+                <h3>Admin Portal</h3>
+                <p>Manage school operations</p>
+            </div>
+            <div class="portal-card" onclick="location.href='teacher-login.html'">
+                <span class="icon">👨‍🏫</span>
+                <h3>Teacher Portal</h3>
+                <p>Manage classes & students</p>
+            </div>
         </div>
-        <div class="portal-card">
-            <div style="font-size: 50px;">👨‍🏫</div>
-            <h3>Teacher Portal</h3>
-            <p>Manage exams, attendance, results</p>
-            <button onclick="location.href='login.html?portal=teacher'">Login as Teacher</button>
-        </div>
-        <div class="portal-card">
-            <div style="font-size: 50px;">👨‍👩‍👧</div>
-            <h3>Parent Portal</h3>
-            <p>View child's progress</p>
-            <button onclick="location.href='login.html?portal=parent'">Login as Parent</button>
-        </div>
-    </div>
-    
-    <div class="footer">
-        <p>© 2026 Dawamu School. All rights reserved.</p>
-        <p style="color: #8DB600; margin-top: 10px;">"Transforming Boys Into Leaders"</p>
+        
+        <div class="footer">© 2026 Dawamu School | All Rights Reserved</div>
     </div>
 </body>
 </html>
